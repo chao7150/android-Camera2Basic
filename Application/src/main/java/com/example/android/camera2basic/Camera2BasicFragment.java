@@ -465,7 +465,7 @@ public class Camera2BasicFragment extends Fragment
 
     private String createFileName() {
         Date date = new Date();
-        String dateStr = new SimpleDateFormat("yyyyMMdd_hhmmss").format(date);
+        String dateStr = new SimpleDateFormat("yyyyMMdd_kkmmss").format(date);
         return "IMG_" + dateStr + ".jpg";
     }
 
