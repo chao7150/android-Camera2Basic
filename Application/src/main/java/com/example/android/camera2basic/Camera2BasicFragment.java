@@ -29,9 +29,11 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Camera;
+import android.graphics.Canvas;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
 import android.graphics.drawable.BitmapDrawable;
@@ -68,6 +70,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -973,12 +976,22 @@ public class Camera2BasicFragment extends Fragment
             byte[] bytes = new byte[buffer.remaining()];
             buffer.get(bytes);
             Bitmap takenPhoto = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-            Resources r = CameraActivity.class.
-            Bitmap overlay = BitmapFactory.decodeResource(CameraActivity.getResources());
+            Context context = CameraActivity.getContext();
+            Bitmap overlayMap = BitmapFactory.decodeResource(context.getResources(), R.drawable.frame01);
+            Bitmap offBitmap = Bitmap.createBitmap(overlayMap.getWidth(),
+                    overlayMap.getHeight(), Bitmap.Config.ARGB_8888);
+            Canvas offScreen = new Canvas(offBitmap);
+            offScreen.drawBitmap(takenPhoto,null,
+                    new Rect(0, 0, overlayMap.getWidth(), overlayMap.getHeight()), null);
+            offScreen.drawBitmap(overlayMap,null,
+                    new Rect(0, 0, overlayMap.getWidth(), overlayMap.getHeight()), null);
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            offBitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+            byte[] overlayed_bytes = bos.toByteArray();
             FileOutputStream output = null;
             try {
                 output = new FileOutputStream(mFile);
-                output.write(bytes);
+                output.write(overlayed_bytes);
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
