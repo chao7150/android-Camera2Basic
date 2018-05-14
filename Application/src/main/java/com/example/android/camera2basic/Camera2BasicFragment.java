@@ -295,6 +295,7 @@ public class Camera2BasicFragment extends Fragment
      */
     private int mSensorOrientation;
 
+    private static String chosenFrame = "00";
     private static int frame_id = 0;
 
     /**
@@ -444,14 +445,13 @@ public class Camera2BasicFragment extends Fragment
     @Override
     public void onViewCreated(final View view, Bundle savedInstanceState) {
         Bundle bundle = getArguments();
-        String chosenFrame = bundle.getString("FRAME_TYPE");
+        chosenFrame = bundle.getString("FRAME_TYPE");
         view.findViewById(R.id.picture).setOnClickListener(this);
         view.findViewById(R.id.info).setOnClickListener(this);
         view.findViewById(R.id.frame).setOnClickListener(this);
         Button frameButton = (Button)view.findViewById(R.id.frame);
         Context context = CameraActivity.getContext();
         frame_id = context.getResources().getIdentifier("frame" + chosenFrame, "drawable", context.getPackageName());
-        frameButton.setText(chosenFrame);
         ImageView overlay = (ImageView)view.findViewById(R.id.overlay);
         overlay.setImageResource(frame_id);
         mTextureView = (AutoFitTextureView) view.findViewById(R.id.texture);
@@ -979,23 +979,25 @@ public class Camera2BasicFragment extends Fragment
             ByteBuffer buffer = mImage.getPlanes()[0].getBuffer();
             byte[] bytes = new byte[buffer.remaining()];
             buffer.get(bytes);
-            Bitmap takenPhoto = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-            Context context = CameraActivity.getContext();
-            Bitmap overlayMap = BitmapFactory.decodeResource(context.getResources(), frame_id);
-            Bitmap offBitmap = Bitmap.createBitmap(overlayMap.getWidth(),
-                    overlayMap.getHeight(), Bitmap.Config.ARGB_8888);
-            Canvas offScreen = new Canvas(offBitmap);
-            offScreen.drawBitmap(takenPhoto,null,
-                    new Rect(0, 0, overlayMap.getWidth(), overlayMap.getHeight()), null);
-            offScreen.drawBitmap(overlayMap,null,
-                    new Rect(0, 0, overlayMap.getWidth(), overlayMap.getHeight()), null);
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            offBitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
-            byte[] overlayed_bytes = bos.toByteArray();
+            if (chosenFrame != "00") {
+                Bitmap takenPhoto = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                Context context = CameraActivity.getContext();
+                Bitmap overlayMap = BitmapFactory.decodeResource(context.getResources(), frame_id);
+                Bitmap offBitmap = Bitmap.createBitmap(overlayMap.getWidth(),
+                        overlayMap.getHeight(), Bitmap.Config.ARGB_8888);
+                Canvas offScreen = new Canvas(offBitmap);
+                offScreen.drawBitmap(takenPhoto, null,
+                        new Rect(0, 0, overlayMap.getWidth(), overlayMap.getHeight()), null);
+                offScreen.drawBitmap(overlayMap, null,
+                        new Rect(0, 0, overlayMap.getWidth(), overlayMap.getHeight()), null);
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                offBitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+                bytes = bos.toByteArray();
+            }
             FileOutputStream output = null;
             try {
                 output = new FileOutputStream(mFile);
-                output.write(overlayed_bytes);
+                output.write(bytes);
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
