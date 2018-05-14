@@ -295,6 +295,8 @@ public class Camera2BasicFragment extends Fragment
      */
     private int mSensorOrientation;
 
+    private static int frame_id = 0;
+
     /**
      * A {@link CameraCaptureSession.CaptureCallback} that handles events related to JPEG capture.
      */
@@ -447,9 +449,11 @@ public class Camera2BasicFragment extends Fragment
         view.findViewById(R.id.info).setOnClickListener(this);
         view.findViewById(R.id.frame).setOnClickListener(this);
         Button frameButton = (Button)view.findViewById(R.id.frame);
+        Context context = CameraActivity.getContext();
+        frame_id = context.getResources().getIdentifier("frame" + chosenFrame, "drawable", context.getPackageName());
         frameButton.setText(chosenFrame);
         ImageView overlay = (ImageView)view.findViewById(R.id.overlay);
-        overlay.setImageResource(R.drawable.frame01);
+        overlay.setImageResource(frame_id);
         mTextureView = (AutoFitTextureView) view.findViewById(R.id.texture);
     }
 
@@ -977,7 +981,7 @@ public class Camera2BasicFragment extends Fragment
             buffer.get(bytes);
             Bitmap takenPhoto = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
             Context context = CameraActivity.getContext();
-            Bitmap overlayMap = BitmapFactory.decodeResource(context.getResources(), R.drawable.frame01);
+            Bitmap overlayMap = BitmapFactory.decodeResource(context.getResources(), frame_id);
             Bitmap offBitmap = Bitmap.createBitmap(overlayMap.getWidth(),
                     overlayMap.getHeight(), Bitmap.Config.ARGB_8888);
             Canvas offScreen = new Canvas(offBitmap);

@@ -15,16 +15,7 @@ public class ChooseFrameActivity extends AppCompatActivity {
 
     public void backToCamera(View view) {
         String chosenFrame = "0";
-        switch(view.getId()) {
-            case R.id.frame01: {
-                chosenFrame = "1";
-                break;
-            }
-            case R.id.frame02: {
-                chosenFrame = "2";
-                break;
-            }
-        }
+        chosenFrame = (String)view.getContentDescription();
         Intent intent = new Intent(this, CameraActivity.class);
         intent.putExtra(CHOSEN_FRAME, chosenFrame);
         startActivity(intent);
