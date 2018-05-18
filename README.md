@@ -1,3 +1,13 @@
+フォトフレームカメラ
+===================================
+透過png画像をリアルタイムでカメラに重ねながら写真を撮影し合成するためのアプリ。
+
+This application overlays transparent png format images on camera.
+
+以下に示すgoogleのサンプルアプリをベースにして作られた。
+
+It bases on google sample application shown below.
+
 
 Android Camera2Basic Sample
 ===================================

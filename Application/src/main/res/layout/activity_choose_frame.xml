@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ChooseFrameActivity">
+    <ScrollView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:context=".MainActivity">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:contentDescription="00"
+                android:onClick="backToCamera"
+                android:text="No frame" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <ImageButton
+                    android:id="@+id/frame01"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:adjustViewBounds="true"
+                    android:contentDescription="01"
+                    android:onClick="backToCamera"
+                    android:scaleType="fitStart"
+                    app:srcCompat="@drawable/frame01" />
+
+                <ImageButton
+                    android:id="@+id/frame02"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:adjustViewBounds="true"
+                    android:contentDescription="02"
+                    android:onClick="backToCamera"
+                    android:scaleType="fitStart"
+                    app:srcCompat="@drawable/frame02" />
+            </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/frame03"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:contentDescription="03"
+                android:onClick="backToCamera"
+                android:scaleType="fitStart"
+                app:srcCompat="@drawable/frame03" />
+
+            <ImageButton
+                android:id="@+id/frame04"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:contentDescription="04"
+                android:onClick="backToCamera"
+                android:scaleType="fitStart"
+                app:srcCompat="@drawable/frame04" />
+        </LinearLayout><LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/frame05"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:adjustViewBounds="true"
+            android:contentDescription="05"
+            android:onClick="backToCamera"
+            android:scaleType="fitStart"
+            app:srcCompat="@drawable/frame05" />
+
+        <ImageButton
+            android:id="@+id/frame06"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:adjustViewBounds="true"
+            android:contentDescription="06"
+            android:onClick="backToCamera"
+            android:scaleType="fitStart"
+            app:srcCompat="@drawable/frame06" />
+    </LinearLayout><LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/frame07"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:adjustViewBounds="true"
+            android:contentDescription="07"
+            android:onClick="backToCamera"
+            android:scaleType="fitStart"
+            app:srcCompat="@drawable/frame07" />
+
+        <ImageButton
+            android:id="@+id/frame08"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:adjustViewBounds="true"
+            android:contentDescription="08"
+            android:onClick="backToCamera"
+            android:scaleType="fitStart"
+            app:srcCompat="@drawable/frame08" />
+    </LinearLayout>
+        </LinearLayout>
+
+
+    </ScrollView>
+</android.support.constraint.ConstraintLayout>

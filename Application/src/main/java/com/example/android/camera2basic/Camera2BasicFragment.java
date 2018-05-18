@@ -22,13 +22,21 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Camera;
+import android.graphics.Canvas;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
+import android.graphics.drawable.BitmapDrawable;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
@@ -42,6 +50,7 @@ import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.NonNull;
@@ -57,16 +66,21 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -79,6 +93,7 @@ public class Camera2BasicFragment extends Fragment
      */
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
     private static final int REQUEST_CAMERA_PERMISSION = 1;
+    private static final int REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
     private static final String FRAGMENT_DIALOG = "dialog";
 
     static {
@@ -280,6 +295,9 @@ public class Camera2BasicFragment extends Fragment
      */
     private int mSensorOrientation;
 
+    private static String chosenFrame = "00";
+    private static int frame_id = 0;
+
     /**
      * A {@link CameraCaptureSession.CaptureCallback} that handles events related to JPEG capture.
      */
@@ -426,15 +444,29 @@ public class Camera2BasicFragment extends Fragment
 
     @Override
     public void onViewCreated(final View view, Bundle savedInstanceState) {
+        Bundle bundle = getArguments();
+        chosenFrame = bundle.getString("FRAME_TYPE");
         view.findViewById(R.id.picture).setOnClickListener(this);
         view.findViewById(R.id.info).setOnClickListener(this);
+        view.findViewById(R.id.frame).setOnClickListener(this);
+        Button frameButton = (Button)view.findViewById(R.id.frame);
+        Context context = CameraActivity.getContext();
+        frame_id = context.getResources().getIdentifier("frame" + chosenFrame, "drawable", context.getPackageName());
+        ImageView overlay = (ImageView)view.findViewById(R.id.overlay);
+        overlay.setImageResource(frame_id);
         mTextureView = (AutoFitTextureView) view.findViewById(R.id.texture);
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mFile = new File(getActivity().getExternalFilesDir(null), "pic.jpg");
+        mFile = new File(Environment.getExternalStorageDirectory() + "/" + Environment.DIRECTORY_PICTURES + "/nazoani_camera/", createFileName());
+    }
+
+    private String createFileName() {
+        Date date = new Date();
+        String dateStr = new SimpleDateFormat("yyyyMMdd_kkmmss").format(date);
+        return "IMG_" + dateStr + ".jpg";
     }
 
     @Override
@@ -460,18 +492,23 @@ public class Camera2BasicFragment extends Fragment
         super.onPause();
     }
 
-    private void requestCameraPermission() {
+    private void requestCameraStoragePermission() {
         if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
             new ConfirmationDialog().show(getChildFragmentManager(), FRAGMENT_DIALOG);
         } else {
             requestPermissions(new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
+        }
+        if (shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            new ConfirmationDialog().show(getChildFragmentManager(), FRAGMENT_DIALOG);
+        } else {
+            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION);
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
-        if (requestCode == REQUEST_CAMERA_PERMISSION) {
+        if (requestCode == REQUEST_CAMERA_PERMISSION || requestCode == REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION) {
             if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                 ErrorDialog.newInstance(getString(R.string.request_permission))
                         .show(getChildFragmentManager(), FRAGMENT_DIALOG);
@@ -600,9 +637,12 @@ public class Camera2BasicFragment extends Fragment
      * Opens the camera specified by {@link Camera2BasicFragment#mCameraId}.
      */
     private void openCamera(int width, int height) {
-        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA)
-                != PackageManager.PERMISSION_GRANTED) {
-            requestCameraPermission();
+        boolean cameraOk = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA )
+                != PackageManager.PERMISSION_GRANTED;
+        boolean writeOk = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE )
+                != PackageManager.PERMISSION_GRANTED;
+        if (cameraOk || writeOk) {
+            requestCameraStoragePermission();
             return;
         }
         setUpCameraOutputs(width, height);
@@ -901,6 +941,10 @@ public class Camera2BasicFragment extends Fragment
                 }
                 break;
             }
+            case R.id.frame: {
+                Intent intent = new Intent(Camera2BasicFragment.this.getActivity(), ChooseFrameActivity.class);
+                startActivity(intent);
+            }
         }
     }
 
@@ -935,6 +979,21 @@ public class Camera2BasicFragment extends Fragment
             ByteBuffer buffer = mImage.getPlanes()[0].getBuffer();
             byte[] bytes = new byte[buffer.remaining()];
             buffer.get(bytes);
+            if (chosenFrame != "00") {
+                Bitmap takenPhoto = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                Context context = CameraActivity.getContext();
+                Bitmap overlayMap = BitmapFactory.decodeResource(context.getResources(), frame_id);
+                Bitmap offBitmap = Bitmap.createBitmap(overlayMap.getWidth(),
+                        overlayMap.getHeight(), Bitmap.Config.ARGB_8888);
+                Canvas offScreen = new Canvas(offBitmap);
+                offScreen.drawBitmap(takenPhoto, null,
+                        new Rect(0, 0, overlayMap.getWidth(), overlayMap.getHeight()), null);
+                offScreen.drawBitmap(overlayMap, null,
+                        new Rect(0, 0, overlayMap.getWidth(), overlayMap.getHeight()), null);
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                offBitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+                bytes = bos.toByteArray();
+            }
             FileOutputStream output = null;
             try {
                 output = new FileOutputStream(mFile);
@@ -1015,7 +1074,7 @@ public class Camera2BasicFragment extends Fragment
                     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            parent.requestPermissions(new String[]{Manifest.permission.CAMERA},
+                            parent.requestPermissions(new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE},
                                     REQUEST_CAMERA_PERMISSION);
                         }
                     })
